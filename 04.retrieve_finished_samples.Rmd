@@ -20,7 +20,7 @@ tidyverse_packages()
 library("magrittr")
 ```
 
-# input paths and directories
+# input and output paths and directories
 
 ```{r}
 previous_table_path <- file.path(
