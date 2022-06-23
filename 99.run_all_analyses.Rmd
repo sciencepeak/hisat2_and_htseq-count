@@ -20,9 +20,9 @@ library("magrittr")
 # Refresh run
 
 ```{r}
-intermediate_files <- here::here("..", "02_intermediate_files") %T>%
+output_files <- here::here("output_files") %T>%
     dir.create(., showWarnings = F, recursive = T)
-unlink(file.path(intermediate_files, "*"), recursive = T, force = T)
+unlink(file.path(output_files, "*"), recursive = T, force = T)
 ```
 
 
@@ -37,7 +37,6 @@ for (i in serial_scripts) {
     rmarkdown::render(i, quiet = TRUE)
 }
 ```
-
 
 # Clean up rendered html files.
 
