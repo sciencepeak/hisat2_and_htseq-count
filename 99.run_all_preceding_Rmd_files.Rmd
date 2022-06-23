@@ -16,7 +16,6 @@ library("magrittr")
 # proc.time() - ptm
 ```
 
-
 # Refresh run
 
 ```{r}
@@ -24,7 +23,6 @@ output_files <- here::here("output_files") %T>%
     dir.create(., showWarnings = F, recursive = T)
 unlink(file.path(output_files, "*"), recursive = T, force = T)
 ```
-
 
 ```{r}
 serial_scripts <- fs::dir_ls(here::here(), glob = "*.Rmd") %>%
