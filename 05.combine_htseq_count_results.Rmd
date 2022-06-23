@@ -41,7 +41,7 @@ input_htseq_count_directory <- file.path(getwd(), "htseq_count_result_directory"
 # the function summarize_expression will handle "HTSeq" result, rather than "StringTie" result, at this time.
 present_format <- "HTSeq"
 
-present_output_directory <- file.path(getwd(),"output_files") %T>%
+present_output_directory <- file.path(getwd(), "output_files") %T>%
     dir.create(., showWarnings = F, recursive = T)
 
 output_csv_file_name <- "expression_matrix.raw_count.csv"
@@ -52,7 +52,7 @@ output_csv_file_name <- "expression_matrix.raw_count.csv"
 Specifically, run `summarize_expression(files = list_of_files, samples = list_of_samples, format = “HTSeq”)`
 
 ```{r}
-sample_names <- list.files(input_htseq_count_directory) %>%
+sample_names <- list.files(input_htseq_count_directory, full.names = FALSE) %>%
     str_split(., pattern = "\\.", simplify = T) %>%
     .[, 1, drop = T]
 
