@@ -1,0 +1,89 @@
+---
+title: "A good title to conceive"
+author: "Author: Old Vegetable Bird"
+date: "`r format(Sys.time(), '%F')`"
+output:
+    rmarkdown::html_document:
+        theme: readable
+        highlight: textmate
+        df_print: paged
+---
+
+```{r message=FALSE, warning=FALSE}
+rm(list = ls())
+ptm <- proc.time()
+# proc.time() - ptm
+options(stringsAsFactors = F)
+# tidyverse tools
+library("tidyverse")
+tidyverse_packages()
+library("magrittr")
+```
+
+# input paths and directories
+
+```{r}
+previous_table_path <- file.path(
+    getwd(),
+    "shell_and_wdl_setting_files",
+    "all_inclusive_table.tsv"
+)
+
+present_table_path <- file.path(getwd(), "output_files", "partial_inclusive_table.tsv")
+
+output_table_path <- file.path(getwd(), "shell_and_wdl_setting_files", "previously_finished_samples.txt")
+```
+
+# Retrieve project names.
+
+The project names are combined only when being used to match the patient unique ID information, because the second and the third project are actually the same project.
+
+```{r}
+previous_dataframe <- previous_table_path %>%
+    read.delim
+previous_dataframe
+```
+
+
+```{r}
+present_dataframe <- present_table_path %>%
+    read.delim
+present_dataframe
+```
+
+```{r}
+finished_sample_vector <- intersect(
+    previous_dataframe$biosample_accession,
+    present_dataframe$biosample_accession
+)
+
+unfinished_sample_vector <- setdiff(
+    present_dataframe$biosample_accession,
+    finished_sample_vector
+)
+
+summary(finished_sample_vector)
+summary(unfinished_sample_vector)
+```
+
+
+
+```{r}
+to_copy_finished_sample_file_vector <- paste(
+    finished_sample_vector,
+    "htseq_count.txt.bz2",
+    sep = "."
+)
+Linux_sytle_output_file <- file(output_table_path, open = "wb")
+for (item in to_copy_finished_sample_file_vector) {
+    cat(item, file = Linux_sytle_output_file, sep = "\n", append = T)
+}
+close(Linux_sytle_output_file)
+```
+
+
+```{r}
+proc.time() - ptm
+```
+
+

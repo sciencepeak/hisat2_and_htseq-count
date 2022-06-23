@@ -1,0 +1,9 @@
+{
+    "MyBestWorkflow.htseq_count_suffix": "htseq_count.txt",
+    "MyBestWorkflow.hisat_index_path_file": "/media/hugolab/DataRAID1/projects/annotations/hisat2/grch38_snp_tran/genome_index.txt",
+    "MyBestWorkflow.gtf_annotation_file": "/media/hugolab/DataRAID1/projects/annotations/ensembl/Homo_sapiens.GRCh38.99.gtf",
+    "MyBestWorkflow.base_file_name": "SAMN03290954",
+    "MyBestWorkflow.thread_number": 18,
+    "MyBestWorkflow.fastq_r2": "/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768962_2.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768963_2.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768964_2.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768965_2.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768966_2.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768967_2.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768968_2.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768969_2.fastq.gz",
+    "MyBestWorkflow.fastq_r1": "/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768962_1.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768963_1.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768964_1.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768965_1.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768966_1.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768967_1.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768968_1.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768969_1.fastq.gz"
+}

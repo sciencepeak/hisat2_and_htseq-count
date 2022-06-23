@@ -1,0 +1,86 @@
+---
+title: "A good title to conceive"
+author: "Author: Old Vegetable Bird"
+date: "`r format(Sys.time(), '%F')`"
+output:
+    rmarkdown::html_document:
+        theme: readable
+        highlight: textmate
+        df_print: paged
+---
+
+## Environment setup.
+
+```{r message=F, warning=F}
+rm(list = ls())
+ptm <- proc.time()
+# proc.time() - ptm
+options(stringsAsFactors = F)
+library("R.utils")
+
+# tidyverse tools
+library("tidyverse")
+tidyverse_packages()
+library("magrittr")
+```
+
+
+```{r}
+source(file.path(getwd(), "utility_scripts", "write_table_bzip2_wrapper.R"))
+
+# the HTSeq-count result text files are aggregated in R by a function provided in this script,
+source(file.path(getwd(), "utility_scripts", "summarize_expression.R"))
+```
+
+# Set up input files, directories, and parameters
+
+```{r}
+input_htseq_count_directory <- file.path(getwd(), "htseq_count_result_directory") %T>%
+    dir.create(., showWarnings = F, recursive = T)
+
+# the function summarize_expression will handle "HTSeq" result, rather than "StringTie" result, at this time.
+present_format <- "HTSeq"
+
+present_output_directory <- file.path(getwd(),"output_files") %T>%
+    dir.create(., showWarnings = F, recursive = T)
+
+output_csv_file_name <- "expression_matrix.raw_count.csv"
+```
+
+# Merge gene expression values per sample per file into a gene expression matrix.
+
+Specifically, run `summarize_expression(files = list_of_files, samples = list_of_samples, format = “HTSeq”)`
+
+```{r}
+sample_names <- list.files(input_htseq_count_directory) %>%
+    str_split(., pattern = "\\.", simplify = T) %>%
+    .[, 1, drop = T]
+
+# Make sure the sample names from different data sets are not duplicated.
+stopifnot(!any(duplicated(sample_names)))
+
+# Call the summarize_expression function to get a data frame of the gene expression matrix across samples.
+raw_expression_dataframe <- list.files(input_htseq_count_directory, full.names = T) %>%
+    summarize_expression(files = ., samples = sample_names, format = present_format) %>%
+    column_to_rownames(., var = "target_id")
+
+raw_expression_dataframe
+```
+
+# Write and compress the expression data frame.
+
+```{r}
+write_table_bzip2_wrapper(
+    .output_dataframe = raw_expression_dataframe,
+    .output_directory = present_output_directory,
+    .output_raw_file_name = output_csv_file_name,
+    what_delimiter = ",",
+    whether_rownames = T,
+    whether_quote = F
+)
+```
+
+```{r}
+proc.time() - ptm
+```
+

@@ -1,0 +1,9 @@
+{
+    "MyBestWorkflow.htseq_count_suffix": "htseq_count.txt",
+    "MyBestWorkflow.hisat_index_path_file": "/media/hugolab/DataRAID1/projects/annotations/hisat2/grch38_snp_tran/genome_index.txt",
+    "MyBestWorkflow.gtf_annotation_file": "/media/hugolab/DataRAID1/projects/annotations/ensembl/Homo_sapiens.GRCh38.99.gtf",
+    "MyBestWorkflow.base_file_name": "SAMN03290900",
+    "MyBestWorkflow.thread_number": 18,
+    "MyBestWorkflow.fastq_r2": "/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768863_2.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768864_2.fastq.gz",
+    "MyBestWorkflow.fastq_r1": "/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768863_1.fastq.gz;/media/hugolab/DataRAID1/projects/samples/PRJNA273359/SRR1768864_1.fastq.gz"
+}

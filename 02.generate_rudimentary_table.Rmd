@@ -1,0 +1,132 @@
+---
+title: "A good title to conceive"
+author: "Author: Old Vegetable Bird"
+date: "`r format(Sys.time(), '%F')`"
+output:
+    rmarkdown::html_document:
+        theme: readable
+        highlight: textmate
+        df_print: paged
+---
+
+```{r message=FALSE, warning=FALSE}
+rm(list = ls())
+ptm <- proc.time()
+# proc.time() - ptm
+options(stringsAsFactors = F)
+library("magrittr")
+library("stringr")
+library("tidyr")
+```
+
+# input paths and directories
+
+```{r}
+local_parental_path <- "/media/hugolab/DataRAID1/projects/samples"
+cloud_parental_path <- "gs://reference_data_02/samples"
+present_bioproject <- "PRJNA273359"
+
+raw_metadata_table_path <- file.path(getwd(), "output_files", "sample_matching_using_gse_sra_ebi.tsv")
+
+output_table_path <- file.path(getwd(), "output_files", "partial_inclusive_table.tsv")
+```
+
+# Retrieve project names.
+
+The project names are combined only when being used to match the patient unique ID information, because the second and the third project are actually the same project.
+
+```{r}
+raw_metadata_dataframe <- raw_metadata_table_path %>%
+    read.delim
+raw_metadata_dataframe
+```
+
+
+```{r}
+immaculate_metadata_dataframe <- raw_metadata_dataframe %>%
+    filter(., PRJNA_ID == present_bioproject) %$%
+    # Sort the table by title
+    # If not sorted, the later grouping function tapply will sort the title column.
+    # Then the tapply-sorted column will be inconsistent with the unsorted other columns.
+    .[order(title), ]
+```
+
+# Make complete fastq file path from fastq file name
+
+```{r}
+make_complete_path <- function(a_parental_path, a_bioproject, a_file_name) {
+    the_complete_path <- paste(a_parental_path, a_bioproject, a_file_name, sep = "/")
+}
+
+make_complete_path <- Vectorize(make_complete_path, vectorize.args = "a_file_name")
+```
+
+
+```{r}
+# Extract the download links for each fastq file.
+# Then change the EBI link to Google Bucket link or local path
+# We need to separate the links for fastq r1 and fastq r2.
+
+r1_fastq_file_name_vector <- immaculate_metadata_dataframe$fastq_ftp %>%
+    sapply(., function(x) strsplit(x, ";")[[1]][1]) %>%
+    unname %>%
+    basename
+
+r2_fastq_file_name_vector <- immaculate_metadata_dataframe$fastq_ftp %>%
+    sapply(., function(x) strsplit(x, ";")[[1]][2]) %>%
+    unname %>%
+    basename
+
+r1_fastq_file_local_path_vector <- r1_fastq_file_name_vector %>%
+    make_complete_path(local_parental_path, present_bioproject, .)
+
+r2_fastq_file_local_path_vector <- r2_fastq_file_name_vector %>%
+    make_complete_path(local_parental_path, present_bioproject, .)
+
+# From now on, due to the grouping tapply to fastq file paths,
+# The title colmn will be unque. Each Pt-Biopsy_timing will have only one unique record.
+# Each Pt-Biopsy_timing will have several fastq file paths concatenated with semicolon.
+# Consequently, the table will have less rows,
+# the vector derived from the table's column will have less elements.
+
+# Group and concatenate the fastq files' google cloud bucket urls or local path based on their titles
+# So we derive (multiple) paths of r1 and r2 fastq files for each Pt-biopsy_timing.
+r1_fastq_combined_paths <- tapply(r1_fastq_file_local_path_vector,
+                                  INDEX = immaculate_metadata_dataframe$title,
+                                  function(x) paste(x, collapse = ";"))
+
+r2_fastq_combined_paths <- tapply(r2_fastq_file_local_path_vector,
+                                  INDEX = immaculate_metadata_dataframe$title,
+                                  function(x) paste(x, collapse = ";"))
+
+biosample_accession_vector <- immaculate_metadata_dataframe %>%
+    use_series(., "sample_accession") %>%
+    unique
+
+patient_biospecimen_vector <- immaculate_metadata_dataframe %>%
+    use_series(., "title") %>%
+    unique
+```
+
+# Compile the vectors into a dataframe.
+
+```{r}
+partial_inclusive_dataframe <- data.frame(
+    patient_biospecimen = patient_biospecimen_vector,
+    biosample_accession = biosample_accession_vector,
+    local_fastq_r1 = r1_fastq_combined_paths,
+    local_fastq_r2 = r2_fastq_combined_paths
+)
+
+write.table(partial_inclusive_dataframe,
+            file = output_table_path,
+            quote = F,
+            sep = "\t",
+            row.names = F)
+```
+
+```{r}
+proc.time() - ptm
+```
+
+

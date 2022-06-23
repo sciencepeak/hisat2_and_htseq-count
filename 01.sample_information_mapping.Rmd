@@ -1,0 +1,160 @@
+---
+title: "A good title to conceive"
+author: "Author: Old Vegetable Bird"
+date: "`r format(Sys.time(), '%F')`"
+output:
+    rmarkdown::html_document:
+        theme: readable
+        highlight: textmate
+        df_print: paged
+---
+
+
+```{r, environmental-setting, message=F, warning=F}
+rm(list = ls())
+ptm <- proc.time()
+# proc.time() - ptm
+options(stringsAsFactors = F)
+
+library("purrr")
+library("tibble")
+library("dplyr")
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# 
+# BiocManager::install("GEOquery")
+library("GEOquery")
+
+library("magrittr")
+```
+
+setup-inputs
+
+```{r}
+# Specify where the directories containing the input files of metadata from EBI, GSE, and SRA.
+
+ebi_read_files_directory <- "ebi_read_files"
+series_matrix_files_directory <- "series_matrix_files"
+sra_run_tables_directory <- "sra_run_tables"
+parental_directory <- "input_files"
+
+# Specify the output:
+project_output_directory <- file.path(getwd(), "output_files") %T>%
+    dir.create(., showWarnings = F, recursive = T)
+
+finally_output_file_path <- file.path(
+    project_output_directory,
+    "sample_matching_using_gse_sra_ebi.tsv"
+)
+
+# mapp the GSE, SRA, and EBI metadata tables to the same BioProject ID.
+mapping_dataframe <- data.frame(
+    GSE = c("GSE65185", "GSE75299", "GSE103658"),
+    SRA = c("PRJNA273359", "PRJNA303170","PRJNA403850"),
+    EBI = c("PRJNA273359", "PRJNA303170","PRJNA403850")
+)
+mapping_dataframe
+```
+
+```{r process-inputs}
+# Create a character vector of the desired names corresponding to the file names.
+GSE_names <- file.path(getwd(), parental_directory, series_matrix_files_directory) %>%
+    list.files %>%
+    sapply(., function(x) strsplit(x, "_")[[1]][1]) %>%
+    unname
+SRA_names <- file.path(getwd(), parental_directory, sra_run_tables_directory) %>%
+    list.files %>%
+    sapply(., function(x) strsplit(x, "\\.")[[1]][1]) %>%
+    unname
+EBI_names <- file.path(getwd(), parental_directory, ebi_read_files_directory) %>%
+    list.files %>%
+    sapply(., function(x) strsplit(x, "\\.")[[1]][1]) %>%
+    unname
+
+# Create a character vector of full paths to the input files
+series_matrix_files <- file.path(getwd(), parental_directory, series_matrix_files_directory) %>%
+    list.files(., full.names = T) %>%
+    set_names(., GSE_names)
+sra_run_tables <- file.path(getwd(), parental_directory, sra_run_tables_directory) %>%
+    list.files(., full.names = T) %>%
+    set_names(., SRA_names)
+ebi_read_files <- file.path(getwd(), parental_directory, ebi_read_files_directory) %>%
+    list.files(., full.names = T) %>%
+    set_names(., EBI_names)
+```
+
+```{r read-metadata, message=F, warning=F}
+# series matrix files need to be read and parsed by the getGEO function.
+get_gse_dataframe <- function(input_file) {
+    gse_dataframe <- getGEO(filename = input_file) %>%
+        .@phenoData %>%
+        .@data
+}
+
+# Read the metadata files into a list of dataframes.
+gse_dataframe_list <- lapply(series_matrix_files, get_gse_dataframe)
+sra_dataframe_list <- lapply(sra_run_tables, read.csv)
+ebi_dataframe_list <- lapply(ebi_read_files, read.delim)
+```
+
+
+```{r message=F, warning=F}
+accumulation_list <- list()
+for (i in seq_len(nrow(mapping_dataframe))) {
+    # i <- 2
+    # ensure the three dataframes refers to the same data set,
+    # which is designated in the mapping_dataframe.
+    gse_dataframe <- mapping_dataframe[i, "GSE"] %>%
+        gse_dataframe_list[[.]]
+    sra_dataframe <- mapping_dataframe[i, "SRA"] %>%
+        sra_dataframe_list[[.]]
+    ebi_dataframe <- mapping_dataframe[i, "EBI"] %>%
+        ebi_dataframe_list[[.]]
+    
+    # Rename the column names for later merging.
+    colnames(sra_dataframe)[colnames(sra_dataframe) == "Run"] <- "run_accession"
+    colnames(sra_dataframe)[colnames(sra_dataframe) == "GEO_Accession..exp."] <- "geo_accession"
+    colnames(sra_dataframe)[colnames(sra_dataframe) == "BioSample"] <- "sample_accession"
+    
+    # only retain the columns of interest.
+    subset_gse_dataframe <- gse_dataframe[, c("title", "geo_accession")]
+    subset_sra_dataframe <- sra_dataframe[, c("geo_accession", "run_accession", "sample_accession")]
+    subset_ebi_dataframe <- ebi_dataframe[, c("run_accession", "fastq_ftp")]
+    
+    # left join to merge columns of interest, three dataframes, one by one.
+    sra_gse_merged_table <- merge(
+        x = subset_sra_dataframe,
+        y = subset_gse_dataframe,
+        by = "geo_accession",
+        all.x = T
+    )
+    sra_gse_ebi_merged_table <- merge(
+        x = sra_gse_merged_table,
+        y = subset_ebi_dataframe,
+        by = "run_accession",
+        all.x = T
+    )
+    accumulation_list[[EBI_names[i]]] <- sra_gse_ebi_merged_table
+}
+
+proc.time() - ptm
+```
+
+# Make the accumulation list into a long format dataframe.
+
+```{r}
+finally_rbind_dataframe <- accumulation_list %>%
+    imap(., ~ add_column(.x, PRJNA_ID = .y, .before = 1)) %>%
+    bind_rows
+    
+write.table(finally_rbind_dataframe,
+            file = finally_output_file_path,
+            quote = F,
+            sep = "\t",
+            row.names = F)
+finally_rbind_dataframe
+```
+
+```{r}
+proc.time() - ptm
+```
