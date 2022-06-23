@@ -9,5 +9,3 @@ current_wdl_runtime_directory="$PWD"
 echo $(cat $password_file_path) | sudo -S rm -r ${current_wdl_runtime_directory}/cromwell-executions ${current_wdl_runtime_directory}/cromwell-workflow-logs
 
 echo "The script runs up to here!"
-
-
