@@ -34,10 +34,6 @@ present_table_path <- file.path(getwd(), "output_files", "partial_inclusive_tabl
 output_table_path <- file.path(getwd(), "shell_and_wdl_setting_files", "previously_finished_samples.txt")
 ```
 
-# Retrieve project names.
-
-The project names are combined only when being used to match the patient unique ID information, because the second and the third project are actually the same project.
-
 ```{r}
 previous_dataframe <- previous_table_path %>%
     read.delim
