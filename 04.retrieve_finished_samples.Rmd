@@ -40,7 +40,6 @@ previous_dataframe <- previous_table_path %>%
 previous_dataframe
 ```
 
-
 ```{r}
 present_dataframe <- present_table_path %>%
     read.delim
@@ -62,7 +61,7 @@ summary(finished_sample_vector)
 summary(unfinished_sample_vector)
 ```
 
-
+# Write the finished sample file names into a text file, which has linux style new line symbols.
 
 ```{r}
 to_copy_finished_sample_file_vector <- paste(
@@ -76,7 +75,6 @@ for (item in to_copy_finished_sample_file_vector) {
 }
 close(Linux_sytle_output_file)
 ```
-
 
 ```{r}
 proc.time() - ptm
