@@ -24,11 +24,15 @@ output_files <- here::here("output_files") %T>%
 unlink(file.path(output_files, "*"), recursive = T, force = T)
 ```
 
+# List Rmd files to run, in other words, render.
+
 ```{r}
 serial_scripts <- fs::dir_ls(here::here(), glob = "*.Rmd") %>%
     .[-length(.)]
 serial_scripts
 ```
+
+# Run all the Rmd files, namely render them.
 
 ```{r message=FALSE, warning=FALSE}
 for (i in serial_scripts) {
